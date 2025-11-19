@@ -22,8 +22,8 @@ Esta é uma API RESTful de demonstração construída com **Java**, **Spring Boo
 ### 1. Clonar o Repositório
 
 ```bash
-git clone [URL_REPOSITORIO]
-cd demo-api
+git clone https://github.com/MarcosAnt/intervalo-api.git
+cd intervalo-api
 ````
 
 ### 2. Rodar a aplicação
