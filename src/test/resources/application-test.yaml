@@ -1,0 +1,7 @@
+# Configuracoes do H2 para o ambiente de TESTE
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb-test
+  jpa:
+    hibernate:
+      ddl-auto: create-drop

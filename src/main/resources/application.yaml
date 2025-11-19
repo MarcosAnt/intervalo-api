@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: intervalo-api
+  h2:
+    console:
+      enabled: true
+  datasource:
+    url: jdbc:h2:mem:moviedb
+    driverClassName: org.h2.Driver
+    username: sa
+    password: password
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+  info:
+    title: Intervalo API
+    version: v1.0.0
+    description: Web Service RESTful para calcular intervalos de premiação.
