@@ -40,9 +40,7 @@ public class MovieListLoaderService {
                             .map(String::trim)
                             .collect(Collectors.toList());
 
-                    List<String> producersList = Arrays.stream(data[3].split(","))
-                            .map(String::trim)
-                            .collect(Collectors.toList());
+                    List<String> producersList = getProducersList(data[3]);
 
                     // Cria a entidade
                     Movie movie = new Movie();
@@ -68,6 +66,25 @@ public class MovieListLoaderService {
             LOGGER.error("loadMovieList - Erro ao inicializar dados do CSV: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    private List<String> getProducersList(String rawProducers) {
+        List<String> producersListRaw = Arrays.stream(rawProducers.split(","))
+                .toList();
+
+        List<String> producersList = new ArrayList<>();
+        // Trata os nomes que estão separados por "and"
+        for (String producers : producersListRaw) {
+            if (producers.contains("and")) {
+                List<String> splitProducers = Arrays.stream(producers.split("\\s+and\\s+"))
+                        .map(String::trim)
+                        .toList();
+                producersList.addAll(splitProducers.stream().filter(p -> !p.isEmpty()).toList());
+            } else {
+                producersList.add(producers.trim());
+            }
+        }
+        return producersList;
     }
 
     /**
