@@ -1,15 +1,13 @@
 package com.intervalo.intervalo_api.service;
 
+import com.intervalo.intervalo_api.dto.ProducerYearDTO;
 import com.intervalo.intervalo_api.dto.WinnerIntervalResponse;
 import com.intervalo.intervalo_api.exception.WinnersNotFoundException;
-import com.intervalo.intervalo_api.model.Movie;
 import com.intervalo.intervalo_api.model.Winner;
 import com.intervalo.intervalo_api.repository.MovieRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -25,18 +23,14 @@ public class WinnerIntervalService {
     public WinnerIntervalResponse getMinMaxInterval() throws WinnersNotFoundException{
         LOGGER.info("Iniciando WinnerIntervalService - getMinMaxInterval");
 
-        // Buscando os filmes vencedores
-        List<Movie> movieList = getWinners();
-
+        // Buscando os anos de vitória dos produtores
+        List<ProducerYearDTO> producerYears = getProducerWinnerYears();
         LOGGER.info("getMinMaxInterval - agrupando dados dos Producers");
-        Map<String, List<Integer>> ganhadores = movieList.stream()
-            .flatMap(movie -> movie.getProducers().stream()
-                    .map(producer -> Map.entry(producer.trim(), movie.getReleaseYear()))
-            )
-            .collect(
-                    Collectors.groupingBy(Map.Entry::getKey,
-                            Collectors.mapping(Map.Entry::getValue, Collectors.toList()))
-            );
+        Map<String, List<Integer>> ganhadores = producerYears.stream()
+                .collect(Collectors.groupingBy(
+                        ProducerYearDTO::getProducer,
+                        Collectors.mapping(ProducerYearDTO::getReleaseYear, Collectors.toList())
+                ));
 
         // getMinMaxInterval - calcula os intervalos
         List<Winner> ganhadoresIntervals = getIntervalos(ganhadores);
@@ -61,20 +55,11 @@ public class WinnerIntervalService {
         return response;
     }
 
-    public List<Movie> getWinners() throws WinnersNotFoundException {
-        LOGGER.info("Iniciando WinnerIntervalService - getWinners");
-        Movie movie = new Movie();
-        movie.setWinner(true);
-
-        ExampleMatcher matcher = ExampleMatcher.matching();
-        Example<Movie> example = Example.of(movie, matcher);
-
-        LOGGER.info("getWinners - buscando dados na base");
-        List<Movie> list = movieRepository.findAll(example);
-        if(list.isEmpty()) {
-            throw new WinnersNotFoundException();
-        }
-        return list;
+    private List<ProducerYearDTO> getProducerWinnerYears() {
+        LOGGER.info("Iniciando WinnerIntervalService - getProducerWinnerYears");
+        List<ProducerYearDTO> producerYears = movieRepository.findProducerWinnerYears();
+        LOGGER.info("getProducerWinnerYears - retornando os dados");
+        return producerYears;
     }
 
     private List<Winner> getIntervalos(Map<String, List<Integer>> ganhadores) {
@@ -114,12 +99,4 @@ public class WinnerIntervalService {
                 .orElseGet(Collections::emptyList);
     }
 
-//    private List<Winner> getProdutoresMaxInterval(Winner maxInterval, List<Winner> producers) {
-//        LOGGER.info("Iniciando WinnerIntervalService - getProdutoresMaxInterval");
-//        Optional<Winner> maxItv = Optional.of(maxInterval);
-//        return maxItv.map(max -> producers.stream()
-//                        .filter(p -> p.getInterval() == max.getInterval())
-//                        .collect(Collectors.toList()))
-//                .orElseGet(Collections::emptyList);
-//    }
 }
